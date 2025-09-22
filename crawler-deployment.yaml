@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crawler
+  labels:
+    app: crawler
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: crawler
+  template:
+    metadata:
+      labels:
+        app: crawler
+    spec:
+      containers:
+      - name: crawler
+        image: crawler:latest
+        env:
+        - name: REDIS_HOST
+          value: "redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crawler-service
+spec:
+  selector:
+    app: crawler
+  ports:
+  - port: 80
+    targetPort: 80
