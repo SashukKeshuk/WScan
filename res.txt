@@ -1,0 +1,18 @@
+Настройки скрипта:
+  URL: http://dl.gsu.by
+  Cookies: {'A': 'B', 'C': 'D'}
+  Headers: {'header': 'value', 'header2': 'value2'}
+  Proxy: http://127.0.0.1:8080
+  Timeout: 10 сек
+  Delay: 0.1 сек
+  Concurrency: 10
+  Serialization test: False
+--------------------------------------------------
+Начинаем обход с: http://dl.gsu.by
+Используем прокси: http://127.0.0.1:8080
+Прокси работает! Ваш IP: 93.171.112.248
+
+Обрабатываем: http://dl.gsu.by
+Пробуем HTTP запрос к: http://dl.gsu.by
+  Успешно: статус 200
+Пробуем HTTPS запрос к: https://dl.gsu.by
