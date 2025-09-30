@@ -27,7 +27,9 @@ cd WScan
 pip install -r requirements.txt
 ```
 
-##🛠 Usage
+## 🛠 Usage
+
+
 Basic Crawling
 ```bash
 python main.py https://example.com
@@ -45,7 +47,7 @@ python main.py -p 127.0.0.1:8080 -s https://example.com
 python main.py -p http://user:pass@127.0.0.1:8080 -s https://example.com
 ```
 
-##⚙️ Command Line Options
+## ⚙️ Command Line Options
 
 Option	Description	Default
 -h, --help	Show help message	
@@ -59,7 +61,7 @@ Option	Description	Default
 --sleep SLEEP	Sleep time for deserialization payloads (seconds)	5
 -e, --exclude EXCLUDE	Cookies to exclude (comma separated)	
 
-###🔍 How Deserialization Testing Works
+### 🔍 How Deserialization Testing Works
 
 WScan uses a sophisticated timing-based approach to detect insecure deserialization vulnerabilities:
 
@@ -78,7 +80,7 @@ PHP: PHP object serialization
 
 Java: Java object serialization
 
-##🏗 Architecture
+## 🏗 Architecture
 
 WScan Core
 ├── Async Crawler (aiohttp)
@@ -89,7 +91,7 @@ WScan Core
 │   └── Java Payload Generator
 └── Reporting Module
 
-##📊 Output
+## 📊 Output
 
 WScan provides:
 
@@ -120,7 +122,7 @@ spec:
         command: ["python", "main.py", "-s", "https://target.com"]
 ```
 
-##🤝 Integration with Burp Suite
+## 🤝 Integration with Burp Suite
 
 
 WScan complements traditional security tools:
