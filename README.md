@@ -50,35 +50,36 @@ python main.py -p http://user:pass@127.0.0.1:8080 -s https://example.com
 ## ⚙️ Command Line Options
 
 Option	Description	Default
--h, --help	Show help message	
--C, --cookies COOKIES	Cookies in format "name1=value1;name2=value2"	
--H, --headers HEADERS	Headers in format "Header1: value1\nHeader2: value2"	
--p, --proxy PROXY	Proxy in format ip:port or protocol://user:pass@ip:port	
--t, --timeout TIMEOUT	Request timeout in seconds	10
--d, --delay DELAY	Delay between requests in seconds	0.1
--c, --concurrency CONCURRENCY	Number of concurrent requests	10
--s, --serialization	Enable deserialization vulnerability testing	
---sleep SLEEP	Sleep time for deserialization payloads (seconds)	5
--e, --exclude EXCLUDE	Cookies to exclude (comma separated)	
+-h, `--help`	Show help message	
+-C, `--cookies` COOKIES	Cookies in format "name1=value1;name2=value2"	
+-H, `--headers` HEADERS	Headers in format "Header1: value1\nHeader2: value2"	
+-p, `--proxy `PROXY	Proxy in format ip:port or protocol://user:pass@ip:port	
+-t, `--timeout` TIMEOUT	Request timeout in seconds	10
+-d, `--delay` DELAY	Delay between requests in seconds	0.1
+-c, `--concurrency` CONCURRENCY	Number of concurrent requests	10
+-s, `--serialization`	Enable deserialization vulnerability testing	
+`--sleep` SLEEP	Sleep time for deserialization payloads (seconds)	5
+-e, `--exclude` EXCLUDE	Cookies to exclude (comma separated)	
 
 ### 🔍 How Deserialization Testing Works
 
 WScan uses a sophisticated timing-based approach to detect insecure deserialization vulnerabilities:
 
-Payload Generation: Creates malicious serialized objects for Python, PHP, and Java containing sleep commands
+**Payload Generation**: Creates malicious serialized objects for Python, PHP, and Java containing sleep commands
 
-Timing Analysis: Measures server response time against expected sleep duration
+**Timing Analysis**: Measures server response time against expected sleep duration
 
-Technology Detection: Sequentially tests each technology stack
+**Technology Detection**: Sequentially tests each technology stack
 
-Confidence Scoring: Flags endpoints as potentially vulnerable based on timing correlation
+**Confidence Scoring**: Flags endpoints as potentially vulnerable based on timing correlation
 
 Supported Technologies
-Python: pickle serialization
 
-PHP: PHP object serialization
+**Python**: pickle serialization
 
-Java: Java object serialization
+**PHP**: PHP object serialization
+
+**Java**: Java object serialization
 
 ## 🏗 Architecture
 
@@ -95,15 +96,15 @@ WScan Core
 
 WScan provides:
 
-Complete URL tree of the scanned application
+ - Complete URL tree of the scanned application
 
-List of potentially vulnerable endpoints
+ - List of potentially vulnerable endpoints
 
-Detailed timing information
+ - Detailed timing information
 
-Technology-specific detection results
+ - Technology-specific detection results
 
-##🐳 Kubernetes Deployment
+## 🐳 Kubernetes Deployment
 
 For large-scale scanning, WScan supports distributed deployment in Kubernetes:
 
@@ -127,11 +128,11 @@ spec:
 
 WScan complements traditional security tools:
 
-Proxy through Burp: Use -p 127.0.0.1:8080 to route traffic through Burp Suite
+ - Proxy through Burp: Use -p 127.0.0.1:8080 to route traffic through Burp Suite
 
-Passive Analysis: Combine WScan's active testing with Burp's passive scanner
+ - Passive Analysis: Combine WScan's active testing with Burp's passive scanner
 
-Comprehensive Coverage: Detect both deserialization and other vulnerability classes
+ - Comprehensive Coverage: Detect both deserialization and other vulnerability classes
 
 
 
