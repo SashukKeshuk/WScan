@@ -13,6 +13,9 @@ import threading
 import pickle
 import base64
 import hashlib
+import subprocess
+import tempfile
+import os
 
 class TreeNode:
     def __init__(self, name):
@@ -114,11 +117,50 @@ def generate_php_payload(sleep_time=5):
     payload = f'O:8:"stdClass":1:{{s:4:"sleep";s:{len(str(sleep_time))}:"{sleep_time}";}}'
     return base64.b64encode(payload.encode('utf-8')).decode('utf-8')
 
+def generate_java_serialized_payload(sleep_time=5):
+    java_code = f'''
+import java.io.*;
+import java.util.*;
+
+public class SleepPayload implements Serializable {{
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {{
+        in.defaultReadObject();
+        try {{
+            Thread.sleep({sleep_time * 1000});
+        }} catch (InterruptedException e) {{}}
+    }}
+}}
+'''
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.java', delete=False) as f:
+        f.write(java_code)
+        java_file = f.name
+
+    try:
+        subprocess.run(['javac', java_file], check=True, capture_output=True)
+        class_file = java_file.replace('.java', '.class')
+        
+        with open(class_file, 'rb') as f:
+            serialized_data = f.read()
+        
+        encoded_payload = base64.b64encode(serialized_data).decode('utf-8')
+        return encoded_payload
+    except Exception:
+        return "rO0ABXA="
+    finally:
+        try:
+            os.unlink(java_file)
+            class_file = java_file.replace('.java', '.class')
+            if os.path.exists(class_file):
+                os.unlink(class_file)
+        except:
+            pass
+
 async def test_serialization_vulnerability(session, url, cookies, headers, timeout, sleep_time, exclude_cookies):
     vulnerabilities = []
     
     pickle_cookies = cookies.copy() if cookies else {}
     php_cookies = cookies.copy() if cookies else {}
+    java_cookies = cookies.copy() if cookies else {}
     
     for cookie_name in pickle_cookies:
         if cookie_name not in exclude_cookies:
@@ -128,40 +170,27 @@ async def test_serialization_vulnerability(session, url, cookies, headers, timeo
         if cookie_name not in exclude_cookies:
             php_cookies[cookie_name] = generate_php_payload(sleep_time)
 
+    for cookie_name in java_cookies:
+        if cookie_name not in exclude_cookies:
+            java_cookies[cookie_name] = generate_java_serialized_payload(sleep_time)
+
     try:
-        start_time = time.time()
-        async with session.get(
-            url,
-            headers=headers,
-            cookies=pickle_cookies,
-            timeout=aiohttp.ClientTimeout(total=timeout + sleep_time + 2),
-            ssl=False,
-            allow_redirects=False
-        ) as response:
-            response_time = time.time() - start_time
-            
-            if abs(response_time - sleep_time) < 1.0:
-                vulnerabilities.append(("pickle", response_time))
-                print(f"  Potential pickle serialization vulnerability detected! Response time: {response_time:.2f}s")
-    
-    except (aiohttp.ClientError, asyncio.TimeoutError):
-        pass
-    
-    try:
-        start_time = time.time()
-        async with session.get(
-            url,
-            headers=headers,
-            cookies=php_cookies,
-            timeout=aiohttp.ClientTimeout(total=timeout + sleep_time + 2),
-            ssl=False,
-            allow_redirects=False
-        ) as response:
-            response_time = time.time() - start_time
-            
-            if abs(response_time - sleep_time) < 1.0:
-                vulnerabilities.append(("php", response_time))
-                print(f"  Potential PHP serialization vulnerability detected! Response time: {response_time:.2f}s")
+        for i, current_cookies in enumerate([pickle_cookies, php_cookies, java_cookies]):
+            start_time = time.time()
+            async with session.get(
+                url,
+                headers=headers,
+                cookies=current_cookies,
+                timeout=aiohttp.ClientTimeout(total=timeout + sleep_time + 2),
+                ssl=False,
+                allow_redirects=False
+            ) as response:
+                response_time = time.time() - start_time
+                
+                if abs(response_time - sleep_time) < 1.0:
+                    method = "pickle" if i == 0 else "php" if i == 1 else "java"
+                    vulnerabilities.append((method, current_cookies, response_time))
+                    print(f"  Potential {method} serialization vulnerability detected! Response time: {response_time:.2f}s")
     
     except (aiohttp.ClientError, asyncio.TimeoutError):
         pass
@@ -225,7 +254,7 @@ async def fetch_url_async(session, url, cookies=None, headers=None, timeout=10,
                 if is_new_directory:
                     print(f"  Testing serialization vulnerabilities...")
                     vulns = await test_serialization_vulnerability(
-                        session, target_url, response_cookies | current_cookies, headers, 
+                        session, target_url, (response_cookies or {}) | (current_cookies or {}), headers, 
                         timeout, sleep_time, exclude_cookies or []
                     )
                     vulnerabilities.extend(vulns)
